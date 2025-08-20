@@ -1,0 +1,14 @@
+*.exe
+*.out
+*.o
+*.a
+*.so
+
+build/
+bin/
+
+.vscode/
+.idea/
+
+server
+client

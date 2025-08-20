@@ -3,13 +3,13 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <thread>
 
 class TCPServer {
 public:
     TCPServer(int port) {
         this->port = port;
         server_fd = -1;
-        client_fd = -1;
     }
 
     bool start() {
@@ -18,9 +18,7 @@ public:
             close(server_fd);
             return 0;
         }
-
-        sockaddr_in address{};
-        int addrlen = sizeof(address);
+        
         address.sin_addr.s_addr = INADDR_ANY;
         address.sin_family = AF_INET;
         address.sin_port = htons(this->port);
@@ -31,32 +29,27 @@ public:
             return 0;
         }
 
-        if (listen(server_fd, 3) == -1) {
+        if (listen(server_fd, 100) == -1) {
             std::cout << "error2";
             close(server_fd);
             return 0;
         }
 
-        client_fd = accept(server_fd, (sockaddr*)&address,  (socklen_t*)&addrlen);
-        if (client_fd < 0) {
-            std::cout << "error3";
-            close(server_fd);
-            return 0;
-        }
+        
         return 1;
     }
 
     void run() {
-        while (true) {
-        std::string message;
-        if (!receive_message(message)) {
-            std::cout << "Клиент отключился или ошибка\n";
-            break;
-        }
-
-        std::cout << "Получено сообщение: " << message << std::endl;
-    }
-
+       while (1) {
+            int client_fd = accept(server_fd, (sockaddr*)&address,  (socklen_t*)&addrlen);
+            if (client_fd < 0) {
+                std::cout << "error3";
+                close(server_fd);
+                return;
+            }
+            std::thread t(&TCPServer::handleClient, this, client_fd);
+            t.detach();
+       }
     }
 
     bool read_n_bytes(int socket, char* buffer, size_t total_bytes) {
@@ -72,16 +65,16 @@ public:
         return true;
     }
 
-    bool receive_message(std::string& out_message) {
+    bool receive_message(int socket, std::string& out_message) {
         uint32_t net_length;
-        if (!read_n_bytes(client_fd, (char*)&net_length, sizeof(net_length)))
+        if (!read_n_bytes(socket, (char*)&net_length, sizeof(net_length)))
             return false;
 
         uint32_t msg_length = ntohl(net_length); 
         if (msg_length == 0) return false;      
 
         char* buffer = new char[msg_length + 1];  
-        if (!read_n_bytes(client_fd, buffer, msg_length)) {
+        if (!read_n_bytes(socket, buffer, msg_length)) {
             delete[] buffer;
             return false;
         }
@@ -94,13 +87,28 @@ public:
 
     ~TCPServer() {
         if (server_fd != -1) close(server_fd);
-        if (client_fd != -1) close(client_fd);
     }
 private:
 
+    void handleClient(int socket) {
+
+        while (true) {
+            std::string message;
+            if (!receive_message(socket, message)) {
+                std::cout << "Клиент отключился или ошибка\n";
+                break;
+            }
+
+            std::cout << "Получено сообщение: " << message << std::endl;
+        }
+        close(socket);
+    }
+
     int port;
-    int server_fd, client_fd;
+    int server_fd;
     int cnt = 0;
+    sockaddr_in address{};
+    int addrlen = sizeof(address);
 };
 
 int main() {
