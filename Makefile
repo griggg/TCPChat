@@ -3,6 +3,8 @@ SRC_DIR=src
 
 .PHONY: client server all clean 
 
+all: client server
+
 client: $(BUILD_DIR)/client.o
 	g++ $< -o $(BUILD_DIR)/$@
 
@@ -16,6 +18,5 @@ server: $(BUILD_DIR)/server.o
 $(BUILD_DIR)/server.o: $(SRC_DIR)/server.cpp
 	g++ -c $< -o $@
 
-all: client server
 clean:
 	rm -r build/*
