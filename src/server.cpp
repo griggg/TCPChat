@@ -4,6 +4,9 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <thread>
+#include <mutex>
+#include <vector>
+#include <map>
 
 class TCPServer {
 public:
@@ -15,7 +18,6 @@ public:
     bool start() {
         server_fd = socket(AF_INET, SOCK_STREAM, 0);
         if (server_fd == -1) {
-            close(server_fd);
             return 0;
         }
         
@@ -49,6 +51,8 @@ public:
             }
             std::thread t(&TCPServer::handleClient, this, client_fd);
             t.detach();
+            std::unique_lock<std::mutex> lock(mtx);
+            clients[client_fd] = 1;
        }
     }
 
@@ -90,6 +94,22 @@ public:
     }
 private:
 
+    void sendMessage(int client_fd, std::string message) {
+        uint32_t len = sizeof(message);
+        uint32_t net_len = htonl(len);
+        send(client_fd, &net_len, sizeof(net_len), 0);
+        send(client_fd, message.c_str(),len, 0);
+    }
+
+    void notyfyClients(std::string msg, int sender) {
+        std::unique_lock<std::mutex> lock(mtx);
+        for (const auto &[client_fd, active] : clients) {
+            if (active == 1 && client_fd != sender) {
+                sendMessage(client_fd, msg);
+            }
+        }
+    }
+
     void handleClient(int socket) {
 
         while (true) {
@@ -100,8 +120,12 @@ private:
             }
 
             std::cout << "Получено сообщение: " << message << std::endl;
+            notyfyClients(message, socket);
         }
         close(socket);
+
+        std::unique_lock<std::mutex> lock(mtx);
+        clients[socket] = 0;
     }
 
     int port;
@@ -109,12 +133,16 @@ private:
     int cnt = 0;
     sockaddr_in address{};
     int addrlen = sizeof(address);
+
+    std::map<int, int> clients;
+
+    std::mutex mtx;
 };
 
 int main() {
     
     
-    TCPServer server(5578);
+    TCPServer server(5582);
 
     server.start();
     server.run();
