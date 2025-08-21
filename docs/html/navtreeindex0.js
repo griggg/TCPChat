@@ -1,0 +1,21 @@
+var NAVTREEINDEX0 =
+{
+"annotated.html":[0,0],
+"classClient.html":[0,0,0],
+"classCommandFactory.html":[0,0,1],
+"classICommand.html":[0,0,2],
+"classMakeRoomCommand.html":[0,0,3],
+"classRoom.html":[0,0,4],
+"classRoom.html#af51865ded79b022a93c6af4bd613d41c":[0,0,4,0],
+"classRoomDAO.html":[0,0,5],
+"classRoomDAO.html#a68b09a947ed7ab91d201c93eab890f94":[0,0,5,0],
+"classTCPServer.html":[0,0,6],
+"classUser.html":[0,0,7],
+"classes.html":[0,1],
+"functions.html":[0,3,0],
+"functions_func.html":[0,3,1],
+"functions_vars.html":[0,3,2],
+"hierarchy.html":[0,2],
+"index.html":[],
+"pages.html":[]
+};

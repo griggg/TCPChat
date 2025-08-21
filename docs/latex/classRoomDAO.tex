@@ -1,0 +1,53 @@
+\doxysection{Класс Room\+DAO}
+\hypertarget{classRoomDAO}{}\label{classRoomDAO}\index{RoomDAO@{RoomDAO}}
+
+
+Класс хранилище комнат  
+
+
+\doxysubsubsection*{Открытые члены}
+\begin{DoxyCompactItemize}
+\item 
+std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classRoom}{Room}} $>$ \mbox{\hyperlink{classRoomDAO_a68b09a947ed7ab91d201c93eab890f94}{make\+Room}} (std\+::string name)
+\begin{DoxyCompactList}\small\item\em Создаёт объект комнаты \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Подробное описание}
+Класс хранилище комнат 
+
+Отвечает за корректное создание и получение комнат 
+
+\doxysubsection{Методы}
+\Hypertarget{classRoomDAO_a68b09a947ed7ab91d201c93eab890f94}\label{classRoomDAO_a68b09a947ed7ab91d201c93eab890f94} 
+\index{RoomDAO@{RoomDAO}!makeRoom@{makeRoom}}
+\index{makeRoom@{makeRoom}!RoomDAO@{RoomDAO}}
+\doxysubsubsection{\texorpdfstring{makeRoom()}{makeRoom()}}
+{\footnotesize\ttfamily std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classRoom}{Room}} $>$ Room\+DAO\+::make\+Room (\begin{DoxyParamCaption}\item[{std\+::string}]{name }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Создаёт объект комнаты 
+
+
+\begin{DoxyParams}{Аргументы}
+{\em std\+::string} & name название комнаты (3-\/20 символов) \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Исключения}
+{\em std\+::invalid\+\_\+argument} & Если параметры невалидны \\
+\hline
+\end{DoxyExceptions}
+\begin{DoxyReturn}{Возвращает}
+\doxylink{classUser}{User} Созданный объект пользователя
+\end{DoxyReturn}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\mbox{\hyperlink{classUser}{User}}\ user\ =\ User::create(\textcolor{stringliteral}{"{}john"{}},\ \textcolor{stringliteral}{"{}secret123"{}});}
+
+\end{DoxyCode}
+ 
+
+Объявления и описания членов класса находятся в файле\+:\begin{DoxyCompactItemize}
+\item 
+src/server.\+cpp\end{DoxyCompactItemize}
