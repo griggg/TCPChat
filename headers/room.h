@@ -62,6 +62,8 @@ class RoomDAO {
 		std::string roomNames;
 		for (auto r : rooms) {
 			roomNames += r->name;
+			roomNames += " ";
+			roomNames += std::to_string(r->id);
 			roomNames += '\n';
 		}
 		return roomNames;

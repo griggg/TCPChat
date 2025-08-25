@@ -26,10 +26,12 @@ class UserDAO {
 
 	std::shared_ptr<User> makeUser(std::string name, std::string password) {
 		for (auto u : users) {
+			std::cout << u->username << " " << name << std::endl;
 			if (u->username == name)
 				throw std::invalid_argument("username не уникальный");
 		}
 		std::shared_ptr<User> user = std::make_shared<User>(name, password);
+		users.push_back(user);
 		return user;
 	}
 
@@ -39,7 +41,9 @@ class UserDAO {
 		}
 		return nullptr;
 	}
-
+	const std::vector<std::shared_ptr<User>> getUsers() {
+		return this->users;
+	}
    private:
 	std::vector<std::shared_ptr<User>> users;
 };

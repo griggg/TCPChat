@@ -28,7 +28,7 @@ class TCPServer {
 
 	void run();
 
-	void sendMessage(int client_fd, const std::string &message);
+	bool sendMessage(int client_fd, const std::string &message);
 
 	~TCPServer();
 

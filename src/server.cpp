@@ -50,11 +50,12 @@ void TCPServer::run() {
 	}
 }
 
-void TCPServer::sendMessage(int client_fd, const std::string &message) {
+bool TCPServer::sendMessage(int client_fd, const std::string &message) {
 	uint32_t len = sizeof(message);
 	uint32_t net_len = htonl(len);
-	send(client_fd, &net_len, sizeof(net_len), 0);
-	send(client_fd, message.c_str(), len, 0);
+	if (send(client_fd, &net_len, sizeof(net_len), 0) <= 0) return false;
+	if (send(client_fd, message.c_str(), len, 0) <= 0) return false;
+	return true;
 }
 
 TCPServer::~TCPServer() {
@@ -113,17 +114,46 @@ void TCPServer::handleClient(int clientSocket) {
 			sendMessage(clientSocket, "Success MKROOM");
 
 		} else if (command == "INROOM") {
+			std::shared_ptr<User> user = nullptr;
+			for (auto const &[key, val] : usersToSockets) {
+				if (val == clientSocket) user = key;
+			}
+			if (!user) {
+				std::cout << "INROOM: user = nullptr" << std::endl;
+				continue;
+			}
+
+			std::string id;
+			receive_message(clientSocket, id);
+			std::shared_ptr<Room> room = roomManager.getById(std::stoi(id));
+
+			if (room == nullptr) {
+				std::cout << "INROOM: room = nullptr" << std::endl;
+				continue;
+			}
+
+			room->addMember(user);
+			sendMessage(clientSocket, "Success INROOM {" + room->name + "}");
+
+			RoomNotifier notifier(
+				this, "Участник " + user->username + " Присоединился к чату");
+			notifier.notify(room);
+
 		} else if (command == "MKUSER") {
 			std::string username;
 			receive_message(clientSocket, username);
 			std::string password;
 			receive_message(clientSocket, password);
-
-			std::shared_ptr<User> user =
+			
+			try {
+				std::shared_ptr<User> user =
 				userManager.makeUser(username, password);
-			if (user == nullptr) continue;
-			usersToSockets[user] = clientSocket;
-			std::cout << "Создан юзер" << std::endl;
+				usersToSockets[user] = clientSocket;
+				std::cout << "Создан юзер" << std::endl;
+				sendMessage(clientSocket, "Создан юзер");
+			} catch (std::invalid_argument) {
+				sendMessage(clientSocket, "Пользователь с таким именем уже существует");
+			}
 
 		} else if (command == "INUSER") {
 			std::string username;
@@ -167,7 +197,7 @@ void TCPServer::handleClient(int clientSocket) {
 int main() {
 	UserDAO userManager;
 	RoomDAO roomManager;
-	TCPServer server(5588, roomManager, userManager);
+	TCPServer server(5637, roomManager, userManager);
 	server.start();
 
 	server.run();
